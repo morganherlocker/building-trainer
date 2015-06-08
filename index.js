@@ -12,13 +12,13 @@ var bbox = [
   37.664526811638126,
   -122.35645294189455,
   37.821175249016726
-  ]
+  ];
 
-var tiles = cover.tiles(turf.bboxPolygon(bbox).geometry, {min_zoom: 15, max_zoom: 15})
+var tiles = cover.tiles(turf.bboxPolygon(bbox).geometry, {min_zoom: 15, max_zoom: 15});
 
 var opts = {
   zoom: 15,
-  maxrate: .5,
+  maxrate: 10,
   tileLayers: [
       {
         name: 'streets',
@@ -29,22 +29,17 @@ var opts = {
   map: __dirname+'/train.js'
 };
 
-var q = queue(1)
-
-
 var tilereduce = TileReduce(tiles, opts);
 
-var buildings = turf.featurecollection([]);
-var images = []
+var images = [];
 
 tilereduce.on('reduce', function(result){
-  buildings.features = buildings.features.concat(result.buildings.features)
-  images = images.concat(result.images)
+  console.log(images.length)
+  images = images.concat(result.images);
 });
 
 tilereduce.on('end', function(error){
-  fs.writeFileSync(__dirname+'/buildings.geojson', JSON.stringify(buildings))
-  fs.writeFileSync(__dirname+'/images.geojson', JSON.stringify(images))
+  fs.writeFileSync(__dirname+'/images.json', JSON.stringify(images));
 });
 
 tilereduce.run();
