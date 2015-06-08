@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>trainer</title>
+<link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+<style>
+body { margin:0; padding:0; }
+#steps { position:absolute; bottom:0px; width:100%; height: 50px; background:#000; }
+#steps a {
+    color:#fff;
+    display:inline-block;
+    text-align:center;
+    box-sizing:border-box;
+    max-width:10000px !important;
+    font-size: 220%;
+    height: 50px;
+}
+#images {
+  text-align: center; 
+}
+</style>
+<script src='http://code.jquery.com/jquery-2.1.4.min.js'></script>
+</head>
+<body>
+<a id='export' href='#'>Export</a>
+<div id="images">
+  
+</div>
+<div id='steps' class='col12'>
+    <a href='#' class='col6 unround button fill-red icon close big' id='no'>NO</a>
+    <a href='#' class='col6 unround button fill-green icon check big' id='yes'>YES</a>
+</div>
+
+<script type="text/javascript">
+var currentImage = 0
+var images
+
+function yes(){
+  currentImage = nextImage()
+  setImage(images[currentImage])
+}
+function no(){
+  currentImage = nextImage()
+  setImage(images[currentImage])
+}
+
+// listen for arrow keys
+document.onkeydown = checkKey;
+function checkKey(e) {
+  e = e || window.event;
+  if (e.keyCode == '39') {
+     yes();
+  }
+  else if (e.keyCode == '37') {
+     no();
+  }
+}
+// listen for yes/no buttons
+document.getElementById('yes').onclick = function () {
+  yes();
+}
+document.getElementById('no').onclick = function () {
+  no();
+}
+
+$.getJSON( "images.json", function(data) {
+  images = data
+  setImage(images[0])
+});
+
+var url = 'https://a.tiles.mapbox.com/v4/mapbox.satellite/19/{x}/{y}@2x.png?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ'
+function setImage(image){
+  console.log(image)
+  var imageUrl = url.split('{x}').join(image.t.split('/')[0]);
+  imageUrl = imageUrl.split('{y}').join(image.t.split('/')[1]);
+  var img = '<img src="'+imageUrl+'">'
+  console.log(img)
+  $('#images').empty();
+  $('#images').html(img)
+}
+
+function nextImage(){
+  return Math.floor(Math.random()*images.length)
+}
+</script>
+</body>
+</html>
