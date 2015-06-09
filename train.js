@@ -20,8 +20,10 @@ module.exports = function trace(layers, tile, done){
     var image = {
       t: tileToID(t)
     }
-    if(buildingHash[tileToID(t)]) image.buildings = true
+    if(buildingHash[tileToID(t)]) image.b = true
     else image.b = false
+    image.v = []
+    if(image.b) image.v.push(1)
     return image
   });
 

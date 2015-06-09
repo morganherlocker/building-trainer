@@ -52,11 +52,15 @@ var images;
 
 function yes(){
   animateButton('#yes')
+  if(!images[currentImage].v) images[currentImage].v = []
+  images[currentImage].v.push(1)
   currentImage = nextImage()
   setImage(images[currentImage])
 }
 function no(){
   animateButton('#no')
+  if(!images[currentImage].v) images[currentImage].v = []
+  images[currentImage].v.push(0)
   currentImage = nextImage()
   setImage(images[currentImage])
 }
