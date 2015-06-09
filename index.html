@@ -14,34 +14,60 @@ body { margin:0; padding:0; }
     max-width:10000px !important;
     font-size: 220%;
     height: 50px;
+    width: 50%;
+    padding-top: 5px;
+}
+#yes{
+  float: right;
 }
 #images {
   text-align: center; 
+}
+#export{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+#exporttxt {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 </style>
 <script src='http://code.jquery.com/jquery-2.1.4.min.js'></script>
 </head>
 <body>
-<a id='export' href='#'>Export</a>
-<div id="images">
+<a id='export' class='button fill-blue' href='#'>Export</a>
+<div id='images'>
   
 </div>
-<div id='steps' class='col12'>
-    <a href='#' class='col6 unround button fill-red icon close big' id='no'>NO</a>
-    <a href='#' class='col6 unround button fill-green icon check big' id='yes'>YES</a>
+<div id='steps' class=''>
+    <a href='#' class='unround button fill-red icon close big' id='no'>NO</a>
+    <a href='#' class='unround button fill-green icon check big' id='yes'>YES</a>
 </div>
 
 <script type="text/javascript">
-var currentImage = 0
-var images
+var url = 'https://a.tiles.mapbox.com/v4/mapbox.satellite/19/{x}/{y}@2x.png?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+var currentImage = 0;
+var images;
 
 function yes(){
+  animateButton('#yes')
   currentImage = nextImage()
   setImage(images[currentImage])
 }
 function no(){
+  animateButton('#no')
   currentImage = nextImage()
   setImage(images[currentImage])
+}
+function animateButton(id){
+  $(id).animate({
+    fontSize: "240%",
+  }, 100, function() {
+    $(id).animate({
+      fontSize: "220%",
+    }, 100, function() {});
+  });
 }
 
 // listen for arrow keys
@@ -63,12 +89,18 @@ document.getElementById('no').onclick = function () {
   no();
 }
 
+// listen for export
+document.getElementById('export').onclick = function () {
+  $('#images').empty();
+  $('#images').html('<div id="exporttxt">'+JSON.stringify(images)+'</div>')
+}
+
+
 $.getJSON( "images.json", function(data) {
   images = data
   setImage(images[0])
 });
 
-var url = 'https://a.tiles.mapbox.com/v4/mapbox.satellite/19/{x}/{y}@2x.png?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ'
 function setImage(image){
   console.log(image)
   var imageUrl = url.split('{x}').join(image.t.split('/')[0]);
