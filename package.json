@@ -17,10 +17,15 @@
   },
   "homepage": "https://github.com/morganherlocker/building-trainer",
   "dependencies": {
+    "brain": "^0.7.0",
+    "clusterfck": "^0.6.0",
+    "get-pixels": "^3.2.2",
+    "ndarray-unpack": "^1.0.0",
     "request": "^2.57.0",
     "rimraf": "^2.3.4",
     "tile-cover": "^2.4.1",
     "tilebelt": "^0.7.1",
-    "turf": "^2.0.2"
+    "turf": "^2.0.2",
+    "zeros": "^1.0.0"
   }
 }

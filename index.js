@@ -8,17 +8,18 @@ var TileReduce = require('tile-reduce')
 var queue = require('queue-async')
 
 var bbox = [
-  -122.53807067871094,
-  37.664526811638126,
-  -122.35645294189455,
-  37.821175249016726
+   -122.51017570495604,
+    37.721645502787695,
+    -122.49017715454102,
+    37.733864951500955
   ];
 
 var tiles = cover.tiles(turf.bboxPolygon(bbox).geometry, {min_zoom: 15, max_zoom: 15});
+//tiles =[[5233,12670,15]]
 
 var opts = {
   zoom: 15,
-  maxrate: 10,
+  maxrate: 1,
   tileLayers: [
       {
         name: 'streets',
@@ -26,7 +27,7 @@ var opts = {
         layers: ['building']
       }
     ],
-  map: __dirname+'/train.js'
+  map: __dirname+'/download.js'
 };
 
 var tilereduce = TileReduce(tiles, opts);
@@ -35,7 +36,7 @@ var images = [];
 
 tilereduce.on('reduce', function(result){
   console.log(images.length)
-  images = images.concat(result.images);
+  images = images.concat(result);
 });
 
 tilereduce.on('end', function(error){

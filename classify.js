@@ -10,40 +10,46 @@ var kmeans = require("clusterfck").kmeans;
 var request = require('request');
 var fs = require('fs')
 
+console.log('<link rel="stylesheet" type="text/css" href="style.css">')
 var z = 19;
 var url = 'https://a.tiles.mapbox.com/v4/mapbox.satellite/'+z+'/{x}/{y}@2x.png?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
-var images = require('./images.json')
+
+var z15 = [[5243, 12680, 15], [5245,12669,15],[5244,12666,15]]
+//var tiles = cover.tiles(z15, {min_zoom: 19, max_zoom: 19});
+var tiles = tilesToZoom(z15, 19)
+
 var q = queue(5)
-var net = new brain.NeuralNetwork()
+var net = new brain.NeuralNetwork().fromJSON(require('./net.json'))
+
+var images = tiles.map(function(tile){
+  return {
+    t: tile.join('/')
+  }
+})
 
 images.forEach(function(image){
   q.defer(getImage, image)
 });
 
 q.awaitAll(function(errors, heuristics){
-  console.log(JSON.stringify(heuristics))
-  net.train(heuristics,{
-    log: true,
-    learningRate: 0.1,
-    logPeriod: 1000,    
-    iterations: 50000
-  });
 
-  fs.writeFileSync('./net.json', JSON.stringify(net.toJSON()))
 })
 
 function getImage(image, done){
   var imageUrl = url.split('{x}').join(image.t.split('/')[0]);
   imageUrl = imageUrl.split('{y}').join(image.t.split('/')[1]);
   getPixels(imageUrl, function(err, pixels){
-    console.log(imageUrl)
-    var data = {
-      input:getHeuristics(pixels).input,
-      output: image.b
-    }
-    if(data.output) data.output = [1]
-    else data.output = [0]
-    done(null, data)
+    var input = getHeuristics(pixels).input
+    var isBuilding = net.run(input)
+    var classification = 'no'
+    if(isBuilding >= .5) classification = 'yes'
+    console.log('<hr>')
+    console.log('<h1>'+Math.round(isBuilding * 100000000) / 1000000+'</h1>')
+    console.log('<img class="'+classification+'" src="'+imageUrl+'">')
+    
+    
+
+    done(null, null)
   })
 }
 
@@ -152,4 +158,34 @@ function clusterPixels (pixels) {
   })
 
   return clusters
+}
+
+function tilesToZoom(tiles, zoom) {
+  var newTiles = zoomTiles(tiles, zoom);
+  return newTiles;
+
+  function zoomTiles(zoomedTiles) {
+    if(zoomedTiles[0][2] === zoom){
+      return zoomedTiles;
+    } else if(zoomedTiles[0][2] < zoom){
+      var oneIn = [];
+      zoomedTiles.forEach(function(tile){
+        oneIn = oneIn.concat(tilebelt.getChildren(tile));
+      });
+      return zoomTiles(oneIn);
+    } else {
+      var zoomedTiles = zoomedTiles.map(function(tile){
+        var centroid =
+          turf.centroid(
+            turf.bboxPolygon(
+              tilebelt.tileToBBOX(tile)
+            )
+          );
+        return tilebelt.pointToTile(
+          centroid.geometry.coordinates[0],
+          centroid.geometry.coordinates[1], zoom);
+      });
+      return zoomedTiles;
+    }
+  }
 }

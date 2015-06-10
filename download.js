@@ -1,0 +1,74 @@
+var turf = require('turf');
+var cover = require('tile-cover');
+var tilebelt = require('tilebelt');
+var queue = require('queue-async');
+var getPixels = require('get-pixels');
+var zeros = require('zeros');
+var brain = require('brain');
+var unpack = require('ndarray-unpack');
+var kmeans = require("clusterfck").kmeans;
+var request = require('request');
+var fs = require('fs')
+
+module.exports = function trace(layers, tile, done){
+  var z = 19;
+  var buildings = layers.streets.building;
+  var url = 'https://a.tiles.mapbox.com/v4/mapbox.satellite/'+z+'/{x}/{y}@2x.png?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+
+  buildingHash = {};
+  buildings.features.forEach(function (building){
+    var buildingTiles = cover.tiles(building.geometry, {min_zoom: z, max_zoom: z});
+    buildingTiles.forEach(function (t){
+      buildingHash[tileToID(t)] = true;
+    });
+  });
+
+  var imageTiles = tilesToZoom([tile], z)
+
+  imageTiles = imageTiles.map(function(t){
+    var image = {
+      t: tileToID(t)
+    }
+    if(buildingHash[tileToID(t)]) image.b = true
+    else image.b = false
+    image.v = []
+    if(image.b) image.v.push(1)
+    return image
+  });
+
+  done(null, imageTiles);
+}
+
+function tileToID(t){
+  return t[0]+'/'+t[1]+'/'+t[2];
+}
+
+function tilesToZoom(tiles, zoom) {
+  var newTiles = zoomTiles(tiles, zoom);
+  return newTiles;
+
+  function zoomTiles(zoomedTiles) {
+    if(zoomedTiles[0][2] === zoom){
+      return zoomedTiles;
+    } else if(zoomedTiles[0][2] < zoom){
+      var oneIn = [];
+      zoomedTiles.forEach(function(tile){
+        oneIn = oneIn.concat(tilebelt.getChildren(tile));
+      });
+      return zoomTiles(oneIn);
+    } else {
+      var zoomedTiles = zoomedTiles.map(function(tile){
+        var centroid =
+          turf.centroid(
+            turf.bboxPolygon(
+              tilebelt.tileToBBOX(tile)
+            )
+          );
+        return tilebelt.pointToTile(
+          centroid.geometry.coordinates[0],
+          centroid.geometry.coordinates[1], zoom);
+      });
+      return zoomedTiles;
+    }
+  }
+}
