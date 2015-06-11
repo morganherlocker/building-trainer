@@ -26,7 +26,7 @@ q.awaitAll(function(errors, heuristics){
     log: true,
     learningRate: 0.1,
     logPeriod: 1000,    
-    iterations: 50000
+    iterations: 100000
   });
 
   fs.writeFileSync('./net.json', JSON.stringify(net.toJSON()))
@@ -135,7 +135,7 @@ function clusterPixels (pixels) {
     }
   }
 
-  var clusters = kmeans(pxArray, 5)
+  var clusters = kmeans(pxArray, 8)
   clusters = clusters.map(function(cluster){
     var r = 0;
     var g = 0;

@@ -141,7 +141,7 @@ function clusterPixels (pixels) {
     }
   }
 
-  var clusters = kmeans(pxArray, 5)
+  var clusters = kmeans(pxArray, 8)
   clusters = clusters.map(function(cluster){
     var r = 0;
     var g = 0;
